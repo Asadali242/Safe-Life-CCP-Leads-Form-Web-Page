@@ -2,13 +2,12 @@
     "name": "lead-form",
     "version": "1.0.0",
     "dependencies": {
-        "node-fetch": "^3.3.2",
         "twilio": "^5.8.0"
     },
     "description": "",
     "main": "script.js",
-    "devDependencies": {},
     "scripts": {
+        "dev:relay": "node scripts/dev-relay.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {

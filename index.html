@@ -72,8 +72,8 @@
 
       <!-- Step 2: Client Info (Name, Relation, Priority) (1) -->
       <div class="step">
-        <label>Client Name <span class="required-label">(required)</span></label>
-        <input type="text" name="name" id="name" placeholder="Enter client's full name" required>
+        <label>Client Full Name <span class="required-label">(required)</span></label>
+        <input type="text" name="name" id="name" placeholder="Enter client's first and last name" required>
         <p class="error-message" id="nameError"></p>
 
         <label>Your Relation with the Client <span class="required-label">(required)</span></label>
@@ -124,8 +124,8 @@
 
         <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
 
-        <label>Phone</label>
-        <input type="tel" name="phone" id="phone" placeholder="e.g., 123-456-7890">
+        <label>Phone <span class="required-label">(required)</span></label>
+        <input type="tel" name="phone" id="phone" placeholder="e.g., 123-456-7890" required>
         <p class="error-message" id="phoneError"></p>
 
         <label>Email</label>
@@ -200,6 +200,7 @@
           <button type="button" class="back-btn" onclick="prevStep()">Back</button>
           <button type="submit">Submit</button>
         </div>
+        <p class="error-message" id="submitError"></p>
       </div>
 
       <!-- Thank You Step -->

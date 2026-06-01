@@ -98,7 +98,11 @@ function validateStep(stepIndex) {
     let isValid = true;
 
     if (!nameValue) {
-      nameError.textContent = "Please enter the client's name.";
+      nameError.textContent = "Please enter the client's full name.";
+      nameError.style.display = "block";
+      isValid = false;
+    } else if (nameValue.split(/\s+/).length < 2) {
+      nameError.textContent = "Please enter both the client's first and last name.";
       nameError.style.display = "block";
       isValid = false;
     } else {
@@ -181,8 +185,8 @@ function validateStep(stepIndex) {
     // Contact validation
     phoneError.style.display = "none";
     emailError.style.display = "none";
-    if (!phoneField.value.trim() && !emailField.value.trim()) {
-      phoneError.textContent = "Provide at least Phone or Email.";
+    if (!phoneField.value.trim()) {
+      phoneError.textContent = "Please provide the client's phone number.";
       phoneError.style.display = "block";
       isValid = false;
     } else {
@@ -402,8 +406,11 @@ function restartForm() {
 document.getElementById('leadForm').addEventListener('submit', async function (e) {
   e.preventDefault();
   const submitButton = this.querySelector('button[type="submit"]');
+  const submitError = document.getElementById('submitError');
   if (submitButton.disabled) return;
 
+  submitError.textContent = '';
+  submitError.style.display = 'none';
   submitButton.disabled = true;
   submitButton.textContent = "Submitting...";
 
@@ -415,14 +422,16 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
   }
 
   try {
-    const response = await fetch('http://localhost:8000/api/external-lead', {
+    const response = await fetch('/.netlify/functions/submit-lead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
 
     if (!response.ok) {
-      console.error('Server error:', response.statusText);
+      const errorData = await response.json().catch(() => ({}));
+      submitError.textContent = errorData.error || 'The lead could not be saved. Please check the form and try again.';
+      submitError.style.display = 'block';
       submitButton.disabled = false;
       submitButton.textContent = "Submit";
       return;
@@ -434,6 +443,8 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
     updateProgressBar();
   } catch (err) {
     console.error('Error submitting form:', err);
+    submitError.textContent = 'The lead could not be saved. Please check your internet connection and try again.';
+    submitError.style.display = 'block';
     submitButton.disabled = false;
     submitButton.textContent = "Submit";
   }
