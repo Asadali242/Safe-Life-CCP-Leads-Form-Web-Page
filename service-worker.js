@@ -1,6 +1,6 @@
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open('safe-life-cache').then(cache => {
+    caches.open('safe-life-cache-v2').then(cache => {
       return cache.addAll([
         '/',
         '/index.html',
@@ -9,6 +9,16 @@ self.addEventListener('install', event => {
         '/icon1.png'
       ]);
     })
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys
+        .filter(key => key.startsWith('safe-life-cache') && key !== 'safe-life-cache-v2')
+        .map(key => caches.delete(key))
+    ))
   );
 });
 

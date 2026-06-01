@@ -1,6 +1,4 @@
-import fetch from 'node-fetch';
-
-export const handler = async (event, context) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -11,15 +9,18 @@ export const handler = async (event, context) => {
   try {
     const data = JSON.parse(event.body);
 
-    // Construct payload, including address fields
-    const payload = {
+    // Construct payload for Google Sheets
+    const sheetsPayload = {
       name: data.name,
+      staff_name: data.staff_name,
+      user_id: data.user_id,
+      source: data.source || "SafeLife CCP Form",
       relation: data.relation,
       birthdate: data.birthdate || "",
       age: data.age || "",
       medicaid: data.medicaid,
       medicaid_number: data.medicaid_number,
-      phone: data.phone,    
+      phone: data.phone,
       email: data.email,
       address_line1: data.address_line1,
       address_line2: data.address_line2,
@@ -30,18 +31,64 @@ export const handler = async (event, context) => {
       info: data.info
     };
 
-    // Google Apps Script endpoint
+    // Google Apps Script endpoint (existing integration)
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbzSbjRvXSXATOWf-4IHLu8C5hkR8JpjGHuF5JgQN4eBMnsUVFttKL5OHwKW0D_FMpm5/exec';
 
-    // Send data to Google Apps Script
-    const response = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    // These values must be configured in the Netlify environment.
+    const LEAD_MANAGER_API_URL = process.env.LEAD_MANAGER_API_URL;
+    const LEAD_MANAGER_API_KEY = process.env.LEAD_MANAGER_API_KEY;
 
-    if (!response.ok) {
-      throw new Error(`Google Apps Script error: ${response.statusText}`);
+    if (!LEAD_MANAGER_API_URL || !LEAD_MANAGER_API_KEY) {
+      console.error('Missing Lead Manager API configuration');
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'The form is not configured yet. Please contact an administrator.' }),
+      };
+    }
+
+    // Save to Lead Manager first. The form must not claim success unless the DB write succeeds.
+    try {
+      const leadManagerResponse = await fetch(LEAD_MANAGER_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': LEAD_MANAGER_API_KEY,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!leadManagerResponse.ok) {
+        const errorText = await leadManagerResponse.text();
+        console.error('Lead Manager API error:', leadManagerResponse.statusText, errorText);
+        return {
+          statusCode: leadManagerResponse.status,
+          body: JSON.stringify({ error: 'The lead could not be saved. Please verify the staff name and Staff ID, then try again.' }),
+        };
+      }
+
+      const result = await leadManagerResponse.json();
+      console.log('Lead Manager success:', result);
+    } catch (leadManagerError) {
+      console.error('Lead Manager API call failed:', leadManagerError.message);
+      return {
+        statusCode: 502,
+        body: JSON.stringify({ error: 'The Lead Manager server could not be reached. Please try again shortly.' }),
+      };
+    }
+
+    // Keep the existing Google Sheets copy as a secondary record.
+    try {
+      const sheetsResponse = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sheetsPayload),
+      });
+
+      if (!sheetsResponse.ok) {
+        console.error('Google Sheets error:', sheetsResponse.statusText);
+      }
+    } catch (sheetsError) {
+      console.error('Google Sheets request failed:', sheetsError.message);
     }
 
     return {

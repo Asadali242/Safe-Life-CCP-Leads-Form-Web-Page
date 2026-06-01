@@ -9,163 +9,210 @@ document.addEventListener('DOMContentLoaded', () => {
   // Re-attach conditional field logic on load
   document.getElementById('know_birthdate').addEventListener('change', toggleBirthOrAgeField);
   document.getElementById('provide_address').addEventListener('change', toggleAddressOrCounty);
+  document.getElementById('source').addEventListener('change', () => {
+    toggleOtherSourceField();
+    toggleSocDateField();
+  });
   toggleAddressOrCounty();
+  toggleOtherSourceField();
+  toggleSocDateField();
 });
 
 function validateStep(stepIndex) {
-  // Step 0: Name
+  // Step 0: Staff Identification
   if (stepIndex === 0) {
-    const nameField = document.getElementById('name');
-    const nameError = document.getElementById('nameError');
-    const nameValue = nameField.value.trim();
-    const nameRegex = /^[A-Za-z ]+$/; // Only letters and spaces
+    const staffNameField = document.getElementById('staff_name');
+    const staffNameError = document.getElementById('staffNameError');
+    const userIdField = document.getElementById('user_id');
+    const userIdError = document.getElementById('userIdError');
+    const sourceField = document.getElementById('source');
+    const sourceError = document.getElementById('sourceError');
 
-    if (!nameValue) {
-      nameError.textContent = "Please enter your name.";
-      nameError.style.display = "block";
+    const staffNameValue = staffNameField.value.trim();
+    const userIdValue = userIdField.value.trim();
+    const sourceValue = sourceField.value;
+
+    // Reset errors
+    staffNameError.style.display = "none";
+    userIdError.style.display = "none";
+    sourceError.style.display = "none";
+
+    if (!staffNameValue) {
+      staffNameError.textContent = "Please enter your staff name.";
+      staffNameError.style.display = "block";
       return;
-    } else if (!nameRegex.test(nameValue)) {
-      nameError.textContent = "Name can only contain letters and spaces.";
-      nameError.style.display = "block";
-      return;
-    } else {
-      nameError.style.display = "none";
     }
+
+    if (!userIdValue) {
+      userIdError.textContent = "Please enter your staff ID.";
+      userIdError.style.display = "block";
+      return;
+    }
+
+    if (!sourceValue) {
+      sourceError.textContent = "Please select a lead source.";
+      sourceError.style.display = "block";
+      return;
+    }
+
+    if (sourceValue === 'Other') {
+      const otherSourceField = document.getElementById('other_source');
+      const otherSourceError = document.getElementById('otherSourceError');
+      const otherSourceValue = otherSourceField.value.trim();
+
+      if (!otherSourceValue) {
+        otherSourceError.textContent = "Please specify the other source.";
+        otherSourceError.style.display = "block";
+        return;
+      }
+      otherSourceError.style.display = "none";
+    }
+
+    if (sourceValue === 'Transfer') {
+      const socDateField = document.getElementById('soc_date');
+      const socDateError = document.getElementById('socDateError');
+      const socDateValue = socDateField.value;
+
+      if (!socDateValue) {
+        socDateError.textContent = "Please enter the SOC Date for transfer.";
+        socDateError.style.display = "block";
+        return;
+      }
+      socDateError.style.display = "none";
+    }
+
     nextStep();
     return;
   }
 
-  // Step 1: Relation
+  // Step 1: Client Info (Name, Relation, Priority)
   if (stepIndex === 1) {
+    const nameField = document.getElementById('name');
+    const nameError = document.getElementById('nameError');
     const relationField = document.getElementById('relation');
     const relationError = document.getElementById('relationError');
+
+    const nameValue = nameField.value.trim();
     const relationValue = relationField.value.trim();
-    const relationRegex = /^[A-Za-z ]+$/; // Only letters and spaces
+
+    let isValid = true;
+
+    if (!nameValue) {
+      nameError.textContent = "Please enter the client's full name.";
+      nameError.style.display = "block";
+      isValid = false;
+    } else if (nameValue.split(/\s+/).length < 2) {
+      nameError.textContent = "Please enter both the client's first and last name.";
+      nameError.style.display = "block";
+      isValid = false;
+    } else {
+      nameError.style.display = "none";
+    }
 
     if (!relationValue) {
       relationError.textContent = "Please enter your relation with the client.";
       relationError.style.display = "block";
-      return;
-    } else if (!relationRegex.test(relationValue)) {
-      relationError.textContent = "Relation can only contain letters and spaces.";
-      relationError.style.display = "block";
-      return;
+      isValid = false;
     } else {
       relationError.style.display = "none";
     }
-    nextStep();
+
+    if (isValid) nextStep();
     return;
   }
 
-  // Step 2: Birth Date
+  // Step 2: Client Details (Birthdate, Medicaid, Phone/Email)
   if (stepIndex === 2) {
     const knowBirthdate = document.getElementById('know_birthdate').value;
     const knowBirthdateError = document.getElementById('knowBirthdateError');
-    knowBirthdateError.style.display = "none";
-  
-    if (!knowBirthdate) {
-      knowBirthdateError.textContent = "Please select Yes or No.";
-      knowBirthdateError.style.display = "block";
-      return;
-    }
-  
-    if (knowBirthdate === 'yes') {
-      const birthdateField = document.getElementById('birthdate');
-      const birthdateError = document.getElementById('birthdateError');
-      birthdateError.style.display = "none";
-      const value = birthdateField.value.trim();
-      const birthdatePattern = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/(19|20)\d{2}$/;
-  
-      if (!value) {
-        birthdateError.textContent = "Please enter the birthdate.";
-        birthdateError.style.display = "block";
-        return;
-      } else if (!birthdatePattern.test(value)) {
-        birthdateError.textContent = "Enter a valid date in mm/dd/yyyy format.";
-        birthdateError.style.display = "block";
-        return;
-      }
-    } else if (knowBirthdate === 'no') {
-      const ageField = document.getElementById('age');
-      const ageError = document.getElementById('ageError');
-      ageError.style.display = "none";
-  
-      if (!ageField.value.trim()) {
-        ageError.textContent = "Please enter the client's age.";
-        ageError.style.display = "block";
-        return;
-      } else if (isNaN(ageField.value.trim()) || ageField.value.trim() <= 0 || ageField.value.trim() > 120) {
-        ageError.textContent = "Enter a valid age (1–120).";
-        ageError.style.display = "block";
-        return;
-      }
-    }
-  
-    nextStep();
-    return;
-  }
-  
-  // Step 3: Medicaid
-  if (stepIndex === 3) {
     const medicaidDropdown = document.getElementById('medicaid');
-    const medicaidError    = document.getElementById('medicaidError');
-    medicaidError.style.display = "none";
-
-    if (!medicaidDropdown.value) {
-      medicaidError.textContent = "Please select Yes or No.";
-      medicaidError.style.display = "block";
-      return;
-    }
-
-    nextStep();
-    return;
-  }
-
-  // Step 4: Phone/Email
-  if (stepIndex === 4) {
+    const medicaidError = document.getElementById('medicaidError');
     const phoneField = document.getElementById('phone');
     const emailField = document.getElementById('email');
     const phoneError = document.getElementById('phoneError');
     const emailError = document.getElementById('emailError');
-    if (!phoneField || !emailField) return;
 
-    // Reset errors
-    phoneError.style.display = "none";
-    emailError.style.display = "none";
+    let isValid = true;
 
-    // Check at least one contact is filled
-    if (!phoneField.value.trim() && !emailField.value.trim()) {
-      phoneError.textContent = "Please provide at least Phone or Email.";
-      phoneError.style.display = "block";
-      return;
-    }
+    // Birthdate validation
+    knowBirthdateError.style.display = "none";
+    if (!knowBirthdate) {
+      knowBirthdateError.textContent = "Please select Yes or No.";
+      knowBirthdateError.style.display = "block";
+      isValid = false;
+    } else if (knowBirthdate === 'yes') {
+      const birthdateField = document.getElementById('birthdate');
+      const birthdateError = document.getElementById('birthdateError');
+      const birthdateValue = birthdateField.value.trim();
+      const birthdatePattern = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/(19|20)\d{2}$/;
 
-    // Validate phone number format
-    if (phoneField.value.trim()) {
-      const phoneValue = phoneField.value.trim();
-      const plainDigits = /^[0-9]{10}$/;            // 10 digits, no dashes
-      const dashedFormat = /^[0-9]{3}-[0-9]{3}-[0-9]{4}$/; // 123-456-7890
-
-      if (!plainDigits.test(phoneValue) && !dashedFormat.test(phoneValue)) {
-        phoneError.textContent = "Please enter a valid phone (1234567890 or 123-456-7890).";
-        phoneError.style.display = "block";
-        return;
+      if (!birthdateValue) {
+        birthdateError.textContent = "Please enter the birthdate.";
+        birthdateError.style.display = "block";
+        isValid = false;
+      } else if (!birthdatePattern.test(birthdateValue)) {
+        birthdateError.textContent = "Enter a valid date in mm/dd/yyyy format.";
+        birthdateError.style.display = "block";
+        isValid = false;
+      } else {
+        birthdateError.style.display = "none";
+      }
+    } else if (knowBirthdate === 'no') {
+      const ageField = document.getElementById('age');
+      const ageError = document.getElementById('ageError');
+      const ageValue = ageField.value.trim();
+      if (!ageValue) {
+        ageError.textContent = "Please enter the client's age.";
+        ageError.style.display = "block";
+        isValid = false;
+      } else if (isNaN(ageValue) || ageValue <= 0 || ageValue > 120) {
+        ageError.textContent = "Enter a valid age (1–120).";
+        ageError.style.display = "block";
+        isValid = false;
+      } else {
+        ageError.style.display = "none";
       }
     }
 
-    // Validate email
-    if (emailField.value.trim() && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(emailField.value.trim())) {
-      emailError.textContent = "Please enter a valid email address.";
-      emailError.style.display = "block";
-      return;
+    // Medicaid validation
+    medicaidError.style.display = "none";
+    if (!medicaidDropdown.value) {
+      medicaidError.textContent = "Please select Yes or No.";
+      medicaidError.style.display = "block";
+      isValid = false;
     }
-    nextStep();
+
+    // Contact validation
+    phoneError.style.display = "none";
+    emailError.style.display = "none";
+    if (!phoneField.value.trim()) {
+      phoneError.textContent = "Please provide the client's phone number.";
+      phoneError.style.display = "block";
+      isValid = false;
+    } else {
+      if (phoneField.value.trim()) {
+        const phoneValue = phoneField.value.trim();
+        const phoneRegex = /^(\d{10}|\d{3}-\d{3}-\d{4})$/;
+        if (!phoneRegex.test(phoneValue)) {
+          phoneError.textContent = "Invalid format (1234567890 or 123-456-7890).";
+          phoneError.style.display = "block";
+          isValid = false;
+        }
+      }
+      if (emailField.value.trim() && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(emailField.value.trim())) {
+        emailError.textContent = "Invalid email address.";
+        emailError.style.display = "block";
+        isValid = false;
+      }
+    }
+
+    if (isValid) nextStep();
     return;
   }
 
-  // Step 5: Address Question + Fields
-  if (stepIndex === 5) {
-    const provide      = document.getElementById('provide_address').value;
+  // Step 3: Address Question + Fields
+  if (stepIndex === 3) {
+    const provide = document.getElementById('provide_address').value;
     const provideError = document.getElementById('provideAddressError');
     provideError.style.display = 'none';
 
@@ -178,17 +225,15 @@ function validateStep(stepIndex) {
     let valid = true;
 
     if (provide === 'yes') {
-      // Validate full address
-      const line1        = document.getElementById('address_line1');
-      const line1Err     = document.getElementById('addressLine1Error');
-      const cityYes      = document.getElementById('city_yes');
-      const cityYesErr   = document.getElementById('cityYesError');
-      const stateField   = document.getElementById('state');
-      const stateErr     = document.getElementById('stateError');
-      const zipYes       = document.getElementById('zip_yes');
-      const zipYesErr    = document.getElementById('zipYesError');
+      const line1 = document.getElementById('address_line1');
+      const line1Err = document.getElementById('addressLine1Error');
+      const cityYes = document.getElementById('city_yes');
+      const cityYesErr = document.getElementById('cityYesError');
+      const stateField = document.getElementById('state');
+      const stateErr = document.getElementById('stateError');
+      const zipYes = document.getElementById('zip_yes');
+      const zipYesErr = document.getElementById('zipYesError');
 
-      // Reset errors
       [line1Err, cityYesErr, stateErr, zipYesErr].forEach(e => e.style.display = 'none');
 
       if (!line1.value.trim()) {
@@ -216,16 +261,11 @@ function validateStep(stepIndex) {
         zipYesErr.style.display = 'block';
         valid = false;
       }
-
-      if (!valid) return;
-    }
-
-    if (provide === 'no') {
-      // Validate city_no, zip_no
-      const cityNo    = document.getElementById('city_no');
+    } else if (provide === 'no') {
+      const cityNo = document.getElementById('city_no');
       const cityNoErr = document.getElementById('cityNoError');
-      const zipNo     = document.getElementById('zip_no');
-      const zipNoErr  = document.getElementById('zipNoError');
+      const zipNo = document.getElementById('zip_no');
+      const zipNoErr = document.getElementById('zipNoError');
 
       [cityNoErr, zipNoErr].forEach(e => e.style.display = 'none');
 
@@ -239,16 +279,14 @@ function validateStep(stepIndex) {
         zipNoErr.style.display = 'block';
         valid = false;
       }
-
-      if (!valid) return;
     }
 
-    nextStep();
+    if (valid) nextStep();
     return;
   }
 
-  // Step 6: Additional Info (No validation needed)
-  if (stepIndex === 6) {
+  // Step 4: Additional Info
+  if (stepIndex === 4) {
     nextStep();
     return;
   }
@@ -292,7 +330,7 @@ function updateProgressBar() {
 function toggleBirthOrAgeField() {
   const know = document.getElementById('know_birthdate').value;
   document.getElementById('birthdateContainer').style.display = (know === 'yes') ? 'block' : 'none';
-  document.getElementById('ageContainer')     .style.display = (know === 'no')  ? 'block' : 'none';
+  document.getElementById('ageContainer').style.display = (know === 'no') ? 'block' : 'none';
 }
 
 function toggleMedicaidField() {
@@ -301,86 +339,87 @@ function toggleMedicaidField() {
   medicaidContainer.style.display = (medicaid === 'yes') ? 'block' : 'none';
 }
 
+function toggleOtherSourceField() {
+  const source = document.getElementById('source').value;
+  const container = document.getElementById('otherSourceContainer');
+  container.style.display = (source === 'Other') ? 'block' : 'none';
+}
+
+function toggleSocDateField() {
+  const source = document.getElementById('source').value;
+  const container = document.getElementById('socDateContainer');
+  container.style.display = (source === 'Transfer') ? 'block' : 'none';
+}
+
 function toggleAddressOrCounty() {
   const provide = document.getElementById('provide_address').value;
 
   const yesGroup = document.querySelectorAll('#addressFields input');
-  const noGroup  = document.querySelectorAll('#countyCityZipContainer input');
+  const noGroup = document.querySelectorAll('#countyCityZipContainer input');
 
   if (provide === 'yes') {
-    // show full address, hide minimal
     document.getElementById('addressFields').style.display = 'block';
     document.getElementById('countyCityZipContainer').style.display = 'none';
-
-    // enable the Yes-fields, disable the No-fields
     yesGroup.forEach(i => i.disabled = false);
-    noGroup .forEach(i => i.disabled = true);
-
+    noGroup.forEach(i => i.disabled = true);
   } else if (provide === 'no') {
-    // show minimal, hide full
     document.getElementById('addressFields').style.display = 'none';
     document.getElementById('countyCityZipContainer').style.display = 'block';
-
-    // disable the Yes-fields, enable the No-fields
     yesGroup.forEach(i => i.disabled = true);
-    noGroup .forEach(i => i.disabled = false);
-
+    noGroup.forEach(i => i.disabled = false);
   } else {
-    // nothing selected yet
     document.getElementById('addressFields').style.display = 'none';
     document.getElementById('countyCityZipContainer').style.display = 'none';
     yesGroup.forEach(i => i.disabled = true);
-    noGroup .forEach(i => i.disabled = true);
+    noGroup.forEach(i => i.disabled = true);
   }
 }
 
 function restartForm() {
   const form = document.getElementById('leadForm');
-
-  // 1) Reset all form controls (inputs, selects, textareas)
   form.reset();
-
-  // 2) Hide every conditional section
-  document.getElementById('birthdateContainer').style.display      = 'none';
-  document.getElementById('ageContainer').style.display            = 'none';
+  document.getElementById('birthdateContainer').style.display = 'none';
+  document.getElementById('ageContainer').style.display = 'none';
   document.getElementById('medicaidNumberContainer').style.display = 'none';
-  document.getElementById('addressFields').style.display           = 'none';
-  document.getElementById('countyCityZipContainer').style.display    = 'none';
+  document.getElementById('addressFields').style.display = 'none';
+  document.getElementById('countyCityZipContainer').style.display = 'none';
+  document.getElementById('otherSourceContainer').style.display = 'none';
+  document.getElementById('socDateContainer').style.display = 'none';
 
-  // 3) Clear all error text and hide them
   document.querySelectorAll('.error-message, .error').forEach(el => {
     el.textContent = '';
     el.style.display = 'none';
   });
 
-  // 4) Reset the submit button
   const submitButton = form.querySelector('button[type="submit"]');
   if (submitButton) {
     submitButton.disabled = false;
     submitButton.textContent = 'Submit';
   }
 
-  // 5) Hide _all_ steps, then show step 0
   steps.forEach(s => s.classList.remove('active'));
   currentStep = 0;
   steps[0].classList.add('active');
-
-  // 6) Reset and redraw the progress bar
   updateProgressBar();
 }
 
-// Handle form submission
-document.getElementById('leadForm').addEventListener('submit', async function(e) {
+document.getElementById('leadForm').addEventListener('submit', async function (e) {
   e.preventDefault();
-
   const submitButton = this.querySelector('button[type="submit"]');
+  const submitError = document.getElementById('submitError');
   if (submitButton.disabled) return;
 
+  submitError.textContent = '';
+  submitError.style.display = 'none';
   submitButton.disabled = true;
   submitButton.textContent = "Submitting...";
 
   const formData = new FormData(this);
   const data = Object.fromEntries(formData);
+
+  if (data.source === 'Other' && data.other_source) {
+    data.source = data.other_source;
+  }
 
   try {
     const response = await fetch('/.netlify/functions/submit-lead', {
@@ -390,7 +429,9 @@ document.getElementById('leadForm').addEventListener('submit', async function(e)
     });
 
     if (!response.ok) {
-      console.error('Server error:', response.statusText);
+      const errorData = await response.json().catch(() => ({}));
+      submitError.textContent = errorData.error || 'The lead could not be saved. Please check the form and try again.';
+      submitError.style.display = 'block';
       submitButton.disabled = false;
       submitButton.textContent = "Submit";
       return;
@@ -402,6 +443,8 @@ document.getElementById('leadForm').addEventListener('submit', async function(e)
     updateProgressBar();
   } catch (err) {
     console.error('Error submitting form:', err);
+    submitError.textContent = 'The lead could not be saved. Please check your internet connection and try again.';
+    submitError.style.display = 'block';
     submitButton.disabled = false;
     submitButton.textContent = "Submit";
   }

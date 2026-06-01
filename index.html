@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#004a68">
@@ -10,6 +11,7 @@
   <link rel="stylesheet" href="style.css">
   <script defer src="script.js"></script>
 </head>
+
 <body>
   <!-- Header -->
   <header class="page-header">
@@ -19,7 +21,7 @@
   <!-- Quote -->
   <div class="quote-container">
     Keeping You Home, Keeping You Safe!
-  </div>  
+  </div>
   <!-- Form Container -->
   <main class="container">
     <div class="progress-container">
@@ -30,26 +32,61 @@
     <h2>Safe Life Home Care Information Form</h2>
 
     <form id="leadForm">
-      <!-- Step 1: Name -->
+      <!-- Step 1: Staff Identification (0) -->
       <div class="step active">
-        <label>Your Name <span class="required-label">(required)</span></label>
-        <input type="text" name="name" id="name" placeholder="Enter your full name" required>
-        <p class="error-message" id="nameError"></p>
+        <label>Staff Name <span class="required-label">(required)</span></label>
+        <input type="text" name="staff_name" id="staff_name" placeholder="Enter your staff name" required>
+        <p class="error-message" id="staffNameError"></p>
+
+        <label>Staff ID <span class="required-label">(required)</span></label>
+        <input type="text" name="user_id" id="user_id" placeholder="Enter your staff ID" required>
+        <p class="error-message" id="userIdError"></p>
+
+        <label>Source <span class="required-label">(required)</span></label>
+        <select name="source" id="source" required>
+          <option value="">-- Please select source --</option>
+          <option value="Home Health Notify">Home Health Notify</option>
+          <option value="Web">Web</option>
+          <option value="External Referral">External Referral</option>
+          <option value="Event">Event</option>
+          <option value="Word of Mouth">Word of Mouth</option>
+          <option value="Transfer">Transfer</option>
+          <option value="Other">Other</option>
+        </select>
+        <p class="error-message" id="sourceError"></p>
+
+        <div id="socDateContainer" style="display:none; margin-top: 15px;">
+          <label>SOC Date (Start of Care) <span class="required-label">(required)</span></label>
+          <input type="date" name="soc_date" id="soc_date">
+          <p class="error-message" id="socDateError"></p>
+        </div>
+
+        <div id="otherSourceContainer" style="display:none; margin-top: 15px;">
+          <label>Specify Other Source <span class="required-label">(required)</span></label>
+          <input type="text" name="other_source" id="other_source" placeholder="Enter source name">
+          <p class="error-message" id="otherSourceError"></p>
+        </div>
+
         <button type="button" onclick="validateStep(0)">Next</button>
       </div>
 
-      <!-- Step 2: Relation -->
+      <!-- Step 2: Client Info (Name, Relation, Priority) (1) -->
       <div class="step">
+        <label>Client Full Name <span class="required-label">(required)</span></label>
+        <input type="text" name="name" id="name" placeholder="Enter client's first and last name" required>
+        <p class="error-message" id="nameError"></p>
+
         <label>Your Relation with the Client <span class="required-label">(required)</span></label>
         <input type="text" name="relation" id="relation" placeholder="e.g., Daughter, Friend" required>
         <p class="error-message" id="relationError"></p>
+
         <div class="button-group">
           <button type="button" class="back-btn" onclick="prevStep()">Back</button>
           <button type="button" onclick="validateStep(1)">Next</button>
         </div>
       </div>
 
-      <!-- Step 3: Birthdate / Age -->
+      <!-- Step 3: Client Details (Birthdate, Medicaid, Phone/Email) (2) -->
       <div class="step">
         <label>Do you know the Birthdate of the Client? <span class="required-label">(required)</span></label>
         <select name="know_birthdate" id="know_birthdate" onchange="toggleBirthOrAgeField()" required>
@@ -71,50 +108,37 @@
           <p class="error-message" id="ageError"></p>
         </div>
 
-        <div class="button-group">
-          <button type="button" class="back-btn" onclick="prevStep()">Back</button>
-          <button type="button" onclick="validateStep(2)">Next</button>
-        </div>
-      </div>
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
 
-      <!-- Step 4: Medicaid -->
-      <div class="step">
         <label>Does the Client have Medicaid? <span class="required-label">(required)</span></label>
         <select name="medicaid" id="medicaid" onchange="toggleMedicaidField()" required>
           <option value="" disabled selected>-- Please select --</option>
           <option value="yes">Yes</option>
           <option value="no">No</option>
         </select>
-        <span id="medicaidError" class="error-message" style="display:none;"></span>
+        <p class="error-message" id="medicaidError"></p>
         <div id="medicaidNumberContainer" style="display:none; margin-top:20px;">
           <label>Medicaid Number (if known)</label>
           <input type="text" name="medicaid_number" placeholder="Enter Medicaid number">
         </div>
-        <div class="button-group">
-          <button type="button" class="back-btn" onclick="prevStep()">Back</button>
-          <button type="button" onclick="validateStep(3)">Next</button>
-        </div>
-      </div>
 
-      <!-- Step 5: Phone/Email -->
-      <div class="step">
-        <label>Phone</label>
-        <input type="tel" name="phone" id="phone" placeholder="e.g., 123-456-7890">
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+        <label>Phone <span class="required-label">(required)</span></label>
+        <input type="tel" name="phone" id="phone" placeholder="e.g., 123-456-7890" required>
         <p class="error-message" id="phoneError"></p>
 
         <label>Email</label>
         <input type="email" name="email" id="email" placeholder="your@email.com">
         <p class="error-message" id="emailError"></p>
 
-        <p class="required-label">Please enter either your Phone number or Email (or both).</p>
-
         <div class="button-group">
           <button type="button" class="back-btn" onclick="prevStep()">Back</button>
-          <button type="button" onclick="validateStep(4)">Next</button>
+          <button type="button" onclick="validateStep(2)">Next</button>
         </div>
       </div>
 
-      <!-- Step 6: Address / County, City, Zip -->
+      <!-- Step 4: Address (3) -->
       <div class="step">
         <label for="provide_address">
           Do you want to provide your Address?
@@ -135,7 +159,7 @@
 
           <label for="address_line2">Address Line 2</label>
           <input type="text" id="address_line2" name="address_line2" placeholder="Enter address line 2">
-          
+
           <label for="city_yes">City <span class="required-label">(required)</span></label>
           <input type="text" id="city_yes" name="city" placeholder="Enter city">
           <span id="cityYesError" class="error-message"></span>
@@ -151,7 +175,8 @@
 
         <!-- If No: minimal fields -->
         <div id="countyCityZipContainer" style="display:none; margin-top:20px;">
-          <label for="city_no">Which City does the client live in? <span class="required-label">(required)</span></label>
+          <label for="city_no">Which City does the client live in? <span
+              class="required-label">(required)</span></label>
           <input type="text" id="city_no" name="city" placeholder="Enter city">
           <span id="cityNoError" class="error-message"></span>
 
@@ -162,18 +187,20 @@
 
         <div class="button-group">
           <button type="button" class="back-btn" onclick="prevStep()">Back</button>
-          <button type="button" onclick="validateStep(5)">Next</button>
+          <button type="button" onclick="validateStep(3)">Next</button>
         </div>
       </div>
 
-      <!-- Step 7: Additional Info -->
+      <!-- Step 5: Additional Info (4) -->
       <div class="step">
         <label>Any other related info</label>
-        <textarea name="info" rows="4" placeholder="If you want us to know anything else, please write it here"></textarea>
+        <textarea name="info" rows="4"
+          placeholder="If you want us to know anything else, please write it here"></textarea>
         <div class="button-group">
           <button type="button" class="back-btn" onclick="prevStep()">Back</button>
           <button type="submit">Submit</button>
         </div>
+        <p class="error-message" id="submitError"></p>
       </div>
 
       <!-- Thank You Step -->
@@ -192,4 +219,5 @@
   </footer>
 
 </body>
+
 </html>
