@@ -61,9 +61,12 @@ exports.handler = async (event, context) => {
       if (!leadManagerResponse.ok) {
         const errorText = await leadManagerResponse.text();
         console.error('Lead Manager API error:', leadManagerResponse.statusText, errorText);
+        const error = leadManagerResponse.status === 409
+          ? 'This lead already exists in Lead Manager.'
+          : 'The lead could not be saved. Please check the required fields and try again.';
         return {
           statusCode: leadManagerResponse.status,
-          body: JSON.stringify({ error: 'The lead could not be saved. Please verify the staff name and Staff ID, then try again.' }),
+          body: JSON.stringify({ error }),
         };
       }
 
