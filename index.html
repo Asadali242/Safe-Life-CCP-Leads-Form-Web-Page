@@ -35,11 +35,13 @@
       <!-- Step 1: Staff Identification (0) -->
       <div class="step active">
         <label>Staff Name <span class="required-label">(required)</span></label>
-        <input type="text" name="staff_name" id="staff_name" placeholder="Enter your staff name" required>
+        <select name="staff_name" id="staff_name" required>
+          <option value="">-- Please select your name --</option>
+        </select>
         <p class="error-message" id="staffNameError"></p>
 
         <label>Staff ID <span class="required-label">(required)</span></label>
-        <input type="text" name="user_id" id="user_id" placeholder="Enter your staff ID" required>
+        <input type="text" name="user_id" id="user_id" placeholder="Filled automatically" readonly required>
         <p class="error-message" id="userIdError"></p>
 
         <label>Source <span class="required-label">(required)</span></label>
@@ -70,15 +72,24 @@
         <button type="button" onclick="validateStep(0)">Next</button>
       </div>
 
-      <!-- Step 2: Client Info (Name, Relation, Priority) (1) -->
+      <!-- Step 2: Client Info (1) -->
       <div class="step">
-        <label>Client Full Name <span class="required-label">(required)</span></label>
-        <input type="text" name="name" id="name" placeholder="Enter client's first and last name" required>
-        <p class="error-message" id="nameError"></p>
+        <label>Client First Name <span class="required-label">(required)</span></label>
+        <input type="text" name="first_name" id="first_name" placeholder="Enter client's first name" required>
+        <p class="error-message" id="firstNameError"></p>
 
-        <label>Your Relation with the Client <span class="required-label">(required)</span></label>
-        <input type="text" name="relation" id="relation" placeholder="e.g., Daughter, Friend" required>
-        <p class="error-message" id="relationError"></p>
+        <label>Client Last Name <span class="required-label">(required)</span></label>
+        <input type="text" name="last_name" id="last_name" placeholder="Enter client's last name" required>
+        <p class="error-message" id="lastNameError"></p>
+
+        <label>Gender <span class="required-label">(required)</span></label>
+        <select name="gender" id="gender" required>
+          <option value="">-- Please select --</option>
+          <option value="Female">Female</option>
+          <option value="Male">Male</option>
+          <option value="Other">Other</option>
+        </select>
+        <p class="error-message" id="genderError"></p>
 
         <div class="button-group">
           <button type="button" class="back-btn" onclick="prevStep()">Back</button>

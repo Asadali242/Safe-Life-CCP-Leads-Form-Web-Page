@@ -5,8 +5,10 @@ const totalSteps = steps.length - 1; // Thank-you step excluded
 // Initialize progress bar on page load
 document.addEventListener('DOMContentLoaded', () => {
   updateProgressBar();
+  loadStaff();
 
   // Re-attach conditional field logic on load
+  document.getElementById('staff_name').addEventListener('change', updateStaffId);
   document.getElementById('know_birthdate').addEventListener('change', toggleBirthOrAgeField);
   document.getElementById('provide_address').addEventListener('change', toggleAddressOrCounty);
   document.getElementById('source').addEventListener('change', () => {
@@ -17,6 +19,36 @@ document.addEventListener('DOMContentLoaded', () => {
   toggleOtherSourceField();
   toggleSocDateField();
 });
+
+async function loadStaff() {
+  const staffField = document.getElementById('staff_name');
+  const staffNameError = document.getElementById('staffNameError');
+
+  try {
+    const response = await fetch('/.netlify/functions/get-staff');
+    if (!response.ok) throw new Error('Staff list could not be loaded');
+
+    const { staff = [] } = await response.json();
+    staff.forEach(({ username, user_id: userId }) => {
+      const option = document.createElement('option');
+      option.value = username;
+      option.textContent = username;
+      option.dataset.userId = userId;
+      staffField.appendChild(option);
+    });
+  } catch (err) {
+    console.error('Error loading staff:', err);
+    staffNameError.textContent = 'Staff names could not be loaded. Please refresh the page.';
+    staffNameError.style.display = 'block';
+    staffField.disabled = true;
+  }
+}
+
+function updateStaffId() {
+  const staffField = document.getElementById('staff_name');
+  const selected = staffField.options[staffField.selectedIndex];
+  document.getElementById('user_id').value = selected?.dataset.userId || '';
+}
 
 function validateStep(stepIndex) {
   // Step 0: Staff Identification
@@ -85,36 +117,39 @@ function validateStep(stepIndex) {
     return;
   }
 
-  // Step 1: Client Info (Name, Relation, Priority)
+  // Step 1: Client Info
   if (stepIndex === 1) {
-    const nameField = document.getElementById('name');
-    const nameError = document.getElementById('nameError');
-    const relationField = document.getElementById('relation');
-    const relationError = document.getElementById('relationError');
-
-    const nameValue = nameField.value.trim();
-    const relationValue = relationField.value.trim();
+    const firstNameField = document.getElementById('first_name');
+    const firstNameError = document.getElementById('firstNameError');
+    const lastNameField = document.getElementById('last_name');
+    const lastNameError = document.getElementById('lastNameError');
+    const genderField = document.getElementById('gender');
+    const genderError = document.getElementById('genderError');
 
     let isValid = true;
 
-    if (!nameValue) {
-      nameError.textContent = "Please enter the client's full name.";
-      nameError.style.display = "block";
-      isValid = false;
-    } else if (nameValue.split(/\s+/).length < 2) {
-      nameError.textContent = "Please enter both the client's first and last name.";
-      nameError.style.display = "block";
+    if (!firstNameField.value.trim()) {
+      firstNameError.textContent = "Please enter the client's first name.";
+      firstNameError.style.display = "block";
       isValid = false;
     } else {
-      nameError.style.display = "none";
+      firstNameError.style.display = "none";
     }
 
-    if (!relationValue) {
-      relationError.textContent = "Please enter your relation with the client.";
-      relationError.style.display = "block";
+    if (!lastNameField.value.trim()) {
+      lastNameError.textContent = "Please enter the client's last name.";
+      lastNameError.style.display = "block";
       isValid = false;
     } else {
-      relationError.style.display = "none";
+      lastNameError.style.display = "none";
+    }
+
+    if (!genderField.value) {
+      genderError.textContent = "Please select the client's gender.";
+      genderError.style.display = "block";
+      isValid = false;
+    } else {
+      genderError.style.display = "none";
     }
 
     if (isValid) nextStep();
@@ -378,6 +413,7 @@ function toggleAddressOrCounty() {
 function restartForm() {
   const form = document.getElementById('leadForm');
   form.reset();
+  updateStaffId();
   document.getElementById('birthdateContainer').style.display = 'none';
   document.getElementById('ageContainer').style.display = 'none';
   document.getElementById('medicaidNumberContainer').style.display = 'none';

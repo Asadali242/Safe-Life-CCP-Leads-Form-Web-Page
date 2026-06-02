@@ -11,11 +11,12 @@ exports.handler = async (event, context) => {
 
     // Construct payload for Google Sheets
     const sheetsPayload = {
-      name: data.name,
+      first_name: data.first_name,
+      last_name: data.last_name,
       staff_name: data.staff_name,
       user_id: data.user_id,
       source: data.source || "SafeLife CCP Form",
-      relation: data.relation,
+      gender: data.gender,
       birthdate: data.birthdate || "",
       age: data.age || "",
       medicaid: data.medicaid,

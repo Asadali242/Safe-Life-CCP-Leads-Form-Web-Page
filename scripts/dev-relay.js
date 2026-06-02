@@ -1,7 +1,8 @@
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
-const { handler } = require('../netlify/functions/submit-lead.js');
+const { handler: submitLead } = require('../netlify/functions/submit-lead.js');
+const { handler: getStaff } = require('../netlify/functions/get-staff.js');
 
 const root = path.resolve(__dirname, '..');
 const port = Number(process.env.PORT || 8888);
@@ -25,7 +26,18 @@ http.createServer((req, res) => {
       body += chunk;
     });
     req.on('end', async () => {
-      const response = await handler({ httpMethod: req.method, body }, {});
+      const response = await submitLead({ httpMethod: req.method, body }, {});
+      res.writeHead(response.statusCode, {
+        'Content-Type': 'application/json',
+        ...(response.headers || {}),
+      });
+      res.end(response.body);
+    });
+    return;
+  }
+
+  if (req.url === '/.netlify/functions/get-staff') {
+    getStaff({ httpMethod: req.method }, {}).then(response => {
       res.writeHead(response.statusCode, {
         'Content-Type': 'application/json',
         ...(response.headers || {}),
@@ -48,4 +60,3 @@ http.createServer((req, res) => {
 }).listen(port, '127.0.0.1', () => {
   console.log(`CCP form relay running at http://127.0.0.1:${port}`);
 });
-
